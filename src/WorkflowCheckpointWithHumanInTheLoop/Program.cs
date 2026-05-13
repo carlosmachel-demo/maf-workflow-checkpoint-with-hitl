@@ -2,6 +2,7 @@
 
 using Azure.AI.OpenAI;
 using Azure.Identity;
+using dotenv.net;
 using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Workflows;
 using Microsoft.Agents.AI.Workflows.Checkpointing;
@@ -16,10 +17,16 @@ internal static class Program
 
     private static async Task Main(string[] args)
     {
+        LoadEnvironmentVariables();
+        
         var endpoint = Environment.GetEnvironmentVariable("AZURE_OPENAI_ENDPOINT")
                        ?? throw new InvalidOperationException("Set AZURE_OPENAI_ENDPOINT");
         var deployment = Environment.GetEnvironmentVariable("AZURE_OPENAI_DEPLOYMENT") ?? "gpt-4o-mini";
-        var checkpointDirectory = Path.Combine(Directory.GetCurrentDirectory(), ".checkpoints");
+        var configuredCheckpointDirectory = Environment.GetEnvironmentVariable("WORKFLOW_CHECKPOINT_DIR");
+        var checkpointDirectory = Path.GetFullPath(
+            string.IsNullOrWhiteSpace(configuredCheckpointDirectory)
+                ? Path.Combine(AppContext.BaseDirectory, ".checkpoints")
+                : configuredCheckpointDirectory);
         Directory.CreateDirectory(checkpointDirectory);
 
         using var checkpointStore = new FileSystemJsonCheckpointStore(new DirectoryInfo(checkpointDirectory));
@@ -57,6 +64,35 @@ internal static class Program
                 cancellationToken: CancellationToken.None);
 
         await ProcessRunAsync(run, checkpointDirectory);
+    }
+
+    private static void LoadEnvironmentVariables()
+    {
+        var candidatePaths = new[]
+            {
+                Path.Combine(Directory.GetCurrentDirectory(), ".env"),
+                Path.Combine(AppContext.BaseDirectory, ".env")
+            }
+            .Where(File.Exists)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        if (candidatePaths.Length > 0)
+        {
+            DotEnv.Load(options: new DotEnvOptions(
+                envFilePaths: candidatePaths,
+                overwriteExistingVars: false));
+
+            Console.WriteLine($"[Config] Loaded .env from: {string.Join(", ", candidatePaths)}");
+            return;
+        }
+
+        DotEnv.Load(options: new DotEnvOptions(
+            probeForEnv: true,
+            probeLevelsToSearch: 6,
+            overwriteExistingVars: false));
+
+        Console.WriteLine("[Config] No local .env file found. Using probed/system environment variables.");
     }
 
     private static ContractSubmission CreateDemoContractSubmission()

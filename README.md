@@ -36,8 +36,9 @@ If the agent does not return valid structured output:
 
 ## Checkpoints
 
-- Fixed folder: `.checkpoints/` in the repository root.
-- After each superstep, the app prints the `checkpointId`.
+- Default folder: `<app-base>/.checkpoints` (with `dotnet run`, typically `src/WorkflowCheckpointWithHumanInTheLoop/bin/Debug/net10.0/.checkpoints`).
+- Optional override: set `WORKFLOW_CHECKPOINT_DIR` to force a custom folder.
+- After each superstep, the app prints the `checkpointId` and checkpoint folder.
 - To resume, use `--resume <checkpointId>` with the same `WORKFLOW_SESSION_ID`.
 
 ## Run
@@ -48,6 +49,7 @@ Set environment variables:
 export AZURE_OPENAI_ENDPOINT="https://<your-endpoint>.openai.azure.com/"
 export AZURE_OPENAI_DEPLOYMENT="gpt-4o-mini"
 export WORKFLOW_SESSION_ID="contract-review-demo"
+export WORKFLOW_CHECKPOINT_DIR="/absolute/path/to/.checkpoints" # optional
 ```
 
 Build:
