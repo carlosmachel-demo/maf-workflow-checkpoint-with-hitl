@@ -17,6 +17,10 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\ContractReview.Core\ContractReview.Core.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
       <None Update=".env">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>

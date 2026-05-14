@@ -1,0 +1,108 @@
+@page "/"
+@rendermode InteractiveServer
+@inject WorkflowStateService StateService
+@implements IDisposable
+
+<PageTitle>Dashboard — Contract Reviews</PageTitle>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Contract Reviews</h1>
+    <a href="/submit" class="btn btn-primary">+ Submit New Contract</a>
+</div>
+
+@if (!runs.Any())
+{
+    <div class="alert alert-secondary">
+        No contracts submitted yet.
+        <a href="/submit">Submit the demo contract</a> to get started.
+    </div>
+}
+else
+{
+    <table class="table table-hover align-middle">
+        <thead class="table-dark">
+            <tr>
+                <th>Run ID</th>
+                <th>Contract ID</th>
+                <th>Status</th>
+                <th>Created</th>
+                <th>AI Suggestion</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var run in runs)
+            {
+                <tr>
+                    <td><code class="text-muted">@run.RunId</code></td>
+                    <td>@run.ContractId</td>
+                    <td><span class="badge @StatusBadgeClass(run.Status)">@run.Status</span></td>
+                    <td>@run.CreatedAt.LocalDateTime.ToString("HH:mm:ss")</td>
+                    <td>
+                        @if (run.SuggestedDecision is not null)
+                        {
+                            <span class="badge @SuggestionBadgeClass(run.SuggestedDecision)">
+                                @run.SuggestedDecision
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="text-muted">—</span>
+                        }
+                    </td>
+                    <td>
+                        @if (run.Status == RunStatus.AwaitingHumanReview)
+                        {
+                            <a href="/review/@run.RunId" class="btn btn-sm btn-warning">👤 Review</a>
+                        }
+                        @if (run.Status == RunStatus.Completed)
+                        {
+                            <a href="/outcome/@run.RunId" class="btn btn-sm btn-success">✅ View</a>
+                        }
+                        @if (run.Status == RunStatus.Failed)
+                        {
+                            <span class="text-danger small" title="@run.ErrorMessage">⚠ Error</span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <p class="text-muted small">Auto-refreshes every 3 seconds.</p>
+}
+
+@code {
+    private IReadOnlyList<WorkflowRunState> runs = [];
+    private System.Threading.Timer? _timer;
+
+    protected override void OnInitialized()
+    {
+        Refresh();
+        _timer = new System.Threading.Timer(_ =>
+        {
+            Refresh();
+            InvokeAsync(StateHasChanged);
+        }, null, TimeSpan.FromSeconds(3), TimeSpan.FromSeconds(3));
+    }
+
+    private void Refresh() => runs = StateService.GetAll();
+
+    private static string StatusBadgeClass(RunStatus status) => status switch
+    {
+        RunStatus.Running            => "bg-info text-dark",
+        RunStatus.AwaitingHumanReview => "bg-warning text-dark",
+        RunStatus.Completed          => "bg-success",
+        RunStatus.Failed             => "bg-danger",
+        _                            => "bg-secondary"
+    };
+
+    private static string SuggestionBadgeClass(string suggestion) =>
+        suggestion.ToUpperInvariant() switch
+        {
+            "APPROVE" => "bg-success",
+            "REJECT"  => "bg-danger",
+            _         => "bg-warning text-dark"
+        };
+
+    public void Dispose() => _timer?.Dispose();
+}

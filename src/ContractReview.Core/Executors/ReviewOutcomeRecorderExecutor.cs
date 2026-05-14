@@ -1,7 +1,7 @@
 using Microsoft.Agents.AI.Workflows;
-using WorkflowCheckpointWithHumanInTheLoop.Models;
+using ContractReview.Core.Models;
 
-namespace WorkflowCheckpointWithHumanInTheLoop.Executors;
+namespace ContractReview.Core.Executors;
 
 public sealed class ReviewOutcomeRecorderExecutor : Executor<HumanReviewResponse, ContractReviewOutcome>
 {

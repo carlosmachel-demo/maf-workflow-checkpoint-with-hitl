@@ -1,11 +1,12 @@
 using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Workflows;
-using WorkflowCheckpointWithHumanInTheLoop.Models;
+using ContractReview.Core.Models;
+using ContractReviewModel = ContractReview.Core.Models.ContractReview;
 
-namespace WorkflowCheckpointWithHumanInTheLoop.Executors;
+namespace ContractReview.Core.Executors;
 
 // --------------- Executor 1: AI agent contract review ---------------
-public sealed class ContractReviewAgentExecutor : Executor<ContractSubmission, ContractReview>
+public sealed class ContractReviewAgentExecutor : Executor<ContractSubmission, ContractReviewModel>
 {
     private const int StructuredOutputAttempts = 2;
     private readonly AIAgent _reviewAgent;
@@ -16,7 +17,7 @@ public sealed class ContractReviewAgentExecutor : Executor<ContractSubmission, C
         _reviewAgent = reviewAgent;
     }
 
-    public override async ValueTask<ContractReview> HandleAsync(
+    public override async ValueTask<ContractReviewModel> HandleAsync(
         ContractSubmission input,
         IWorkflowContext ctx,
         CancellationToken cancellationToken)
@@ -30,7 +31,7 @@ public sealed class ContractReviewAgentExecutor : Executor<ContractSubmission, C
                     BuildReviewPrompt(input, attempt),
                     cancellationToken: cancellationToken);
 
-            if (TryCreateReview(input.ContractId, response.Result, out ContractReview review))
+            if (TryCreateReview(input.ContractId, response.Result, out ContractReviewModel review))
             {
                 Console.WriteLine($"[AgentReview] Suggested decision: {review.SuggestedDecision}");
                 return review;
@@ -43,7 +44,7 @@ public sealed class ContractReviewAgentExecutor : Executor<ContractSubmission, C
         Console.WriteLine(
             "[AgentReview] Falling back to REVIEW because the agent did not return valid structured output.");
 
-        return new ContractReview(
+        return new ContractReviewModel(
             input.ContractId,
             "The agent did not return valid structured output after 2 attempts. Manual review is required.",
             ToDecisionToken(ReviewDecision.Review));
@@ -71,7 +72,7 @@ public sealed class ContractReviewAgentExecutor : Executor<ContractSubmission, C
     private static bool TryCreateReview(
         string contractId,
         StructuredContractReview? structuredReview,
-        out ContractReview review)
+        out ContractReviewModel review)
     {
         if (structuredReview is null || string.IsNullOrWhiteSpace(structuredReview.Summary))
         {
@@ -79,7 +80,7 @@ public sealed class ContractReviewAgentExecutor : Executor<ContractSubmission, C
             return false;
         }
 
-        review = new ContractReview(
+        review = new ContractReviewModel(
             contractId,
             structuredReview.Summary.Trim(),
             NormalizeSuggestedDecision(structuredReview.SuggestedDecision));

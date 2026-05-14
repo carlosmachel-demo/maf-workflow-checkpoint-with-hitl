@@ -1,0 +1,68 @@
+@page "/outcome/{RunId}"
+@inject WorkflowStateService StateService
+
+<PageTitle>Review Outcome</PageTitle>
+
+<h1 class="h3 mb-4">✅ Review Outcome</h1>
+
+@if (state is null)
+{
+    <div class="alert alert-danger">Run <code>@RunId</code> not found.</div>
+}
+else if (state.Outcome is null)
+{
+    <div class="alert alert-info">
+        Outcome not available yet. Current status: <strong>@state.Status</strong>
+    </div>
+}
+else
+{
+    <div class="card">
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-sm-3">Contract</dt>
+                <dd class="col-sm-9"><code>@state.Outcome.ContractId</code></dd>
+
+                <dt class="col-sm-3">Final Decision</dt>
+                <dd class="col-sm-9">
+                    <span class="badge fs-5 @DecisionBadgeClass(state.Outcome.Decision)">
+                        @state.Outcome.Decision
+                    </span>
+                </dd>
+
+                @if (state.Outcome.Comments is not null)
+                {
+                    <dt class="col-sm-3">Comments</dt>
+                    <dd class="col-sm-9">@state.Outcome.Comments</dd>
+                }
+
+                @if (state.CheckpointId is not null)
+                {
+                    <dt class="col-sm-3">Checkpoint ID</dt>
+                    <dd class="col-sm-9"><code class="text-muted">@state.CheckpointId</code></dd>
+                }
+            </dl>
+        </div>
+    </div>
+}
+
+<a href="/" class="btn btn-secondary mt-3">← Back to Dashboard</a>
+
+@code {
+    [Parameter] public string RunId { get; set; } = string.Empty;
+
+    private WorkflowRunState? state;
+
+    protected override void OnParametersSet()
+    {
+        state = StateService.Get(RunId);
+    }
+
+    private static string DecisionBadgeClass(string decision) =>
+        decision.ToUpperInvariant() switch
+        {
+            "APPROVE" => "bg-success",
+            "REJECT"  => "bg-danger",
+            _         => "bg-warning text-dark"
+        };
+}
