@@ -1,18 +1,10 @@
-using Azure.AI.OpenAI;
-using Azure.Identity;
 using ContractReview.Core;
 using ContractReview.Core.Models;
-using dotenv.net;
-using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Workflows;
 using Microsoft.Agents.AI.Workflows.Checkpointing;
-using OpenAI.Chat;
 using WorkflowDemoWeb.Components;
 using WorkflowDemoWeb.Models;
 using WorkflowDemoWeb.Services;
-
-// Load .env (probe up to 6 levels for dev convenience)
-DotEnv.Load(options: new DotEnvOptions(probeForEnv: true, probeLevelsToSearch: 6, overwriteExistingVars: false));
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,19 +21,8 @@ var checkpointStore = new FileSystemJsonCheckpointStore(new DirectoryInfo(checkp
 var checkpointManager = CheckpointManager.CreateJson(checkpointStore);
 
 // --- Azure OpenAI ---
-var endpoint = Environment.GetEnvironmentVariable("AZURE_OPENAI_ENDPOINT")
-    ?? throw new InvalidOperationException("Set AZURE_OPENAI_ENDPOINT environment variable.");
-var deployment = Environment.GetEnvironmentVariable("AZURE_OPENAI_DEPLOYMENT") ?? "gpt-4o-mini";
-
-var openAiClient = new AzureOpenAIClient(new Uri(endpoint), new AzureCliCredential());
-ChatClient chatClient = openAiClient.GetChatClient(deployment);
-
-AIAgent reviewAgent = chatClient.AsAIAgent(
-    name: "ContractReviewAgent",
-    instructions: "You are a contract reviewer. Always return valid structured output with Summary and SuggestedDecision.",
-    description: "Reviews contracts and suggests an initial decision.");
-
-Workflow workflow = ContractReviewWorkflowFactory.Build(reviewAgent);
+var provider = new AzureOpenAIProviderService(builder.Configuration);
+Workflow workflow = ContractReviewWorkflowFactory.Build(provider.ReviewAgent);
 
 // --- DI registrations ---
 builder.Services.AddSingleton(checkpointManager);
