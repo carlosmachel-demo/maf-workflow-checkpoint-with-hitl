@@ -2,12 +2,13 @@
 
 using Azure.AI.OpenAI;
 using Azure.Identity;
+using ContractReview.Core;
+using ContractReview.Core.Models;
 using dotenv.net;
 using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Workflows;
 using Microsoft.Agents.AI.Workflows.Checkpointing;
 using OpenAI.Chat;
-using WorkflowCheckpointWithHumanInTheLoop.Models;
 
 namespace WorkflowCheckpointWithHumanInTheLoop;
 

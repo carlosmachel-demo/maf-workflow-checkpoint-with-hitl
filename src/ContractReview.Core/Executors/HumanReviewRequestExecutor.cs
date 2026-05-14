@@ -1,9 +1,10 @@
 using Microsoft.Agents.AI.Workflows;
-using WorkflowCheckpointWithHumanInTheLoop.Models;
+using ContractReview.Core.Models;
+using ContractReviewModel = ContractReview.Core.Models.ContractReview;
 
-namespace WorkflowCheckpointWithHumanInTheLoop.Executors;
+namespace ContractReview.Core.Executors;
 
-public sealed class HumanReviewRequestExecutor : Executor<ContractReview, HumanReviewRequest>
+public sealed class HumanReviewRequestExecutor : Executor<ContractReviewModel, HumanReviewRequest>
 {
     public HumanReviewRequestExecutor()
         : base("HumanReviewRequest")
@@ -11,7 +12,7 @@ public sealed class HumanReviewRequestExecutor : Executor<ContractReview, HumanR
     }
 
     public override ValueTask<HumanReviewRequest> HandleAsync(
-        ContractReview review,
+        ContractReviewModel review,
         IWorkflowContext ctx,
         CancellationToken cancellationToken)
     {

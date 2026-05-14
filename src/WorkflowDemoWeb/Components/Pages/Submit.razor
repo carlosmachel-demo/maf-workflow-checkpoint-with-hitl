@@ -1,0 +1,59 @@
+@page "/submit"
+@rendermode InteractiveServer
+@inject WorkflowRunnerService Runner
+@inject NavigationManager Nav
+
+<PageTitle>Submit Contract</PageTitle>
+
+<h1 class="h3 mb-4">Submit Contract for Review</h1>
+
+<div class="card">
+    <div class="card-body">
+        <div class="mb-3">
+            <label class="form-label fw-bold">Contract ID</label>
+            <input type="text" class="form-control" @bind="contractId" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label fw-bold">Contract Text</label>
+            <textarea class="form-control font-monospace" rows="14" @bind="contractText"></textarea>
+        </div>
+
+        <button class="btn btn-primary" @onclick="HandleSubmit" disabled="@submitting">
+            @(submitting ? "Starting AI review…" : "Submit for AI Review")
+        </button>
+        <a href="/" class="btn btn-secondary ms-2">Cancel</a>
+    </div>
+</div>
+
+@code {
+    private bool submitting;
+
+    private string contractId = "CTR-2026-0042";
+
+    private string contractText =
+        """
+        CONTRATO DE PRESTACAO DE SERVICOS DE TECNOLOGIA
+
+        Partes: Contratante: Empresa Alpha Ltda (CNPJ 00.000.000/0001-00)
+        Contratada: Tech Solutions S.A. (CNPJ 11.111.111/0001-11)
+
+        Objeto: Desenvolvimento de sistema ERP customizado para gestao financeira.
+
+        Valor: R$ 850.000,00 pagos em 12 parcelas mensais.
+        Prazo: 18 meses a partir da assinatura.
+
+        Clausulas criticas:
+        - Multa de 20% sobre o valor total em caso de rescisao sem justa causa
+        - Propriedade intelectual transferida integralmente ao Contratante apos quitacao
+        - SLA de 99,5% de disponibilidade com penalidade de 0,5% por hora de indisponibilidade
+        - Confidencialidade por 5 anos apos encerramento do contrato
+        """;
+
+    private async Task HandleSubmit()
+    {
+        submitting = true;
+        await Runner.StartRunAsync(contractId.Trim(), contractText.Trim());
+        Nav.NavigateTo("/");
+    }
+}

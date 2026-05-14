@@ -5,6 +5,10 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WorkflowCheckpointWithHumanInTheLoop", "src\WorkflowCheckpointWithHumanInTheLoop\WorkflowCheckpointWithHumanInTheLoop.csproj", "{C6F74672-C673-4529-8CC9-0A9A04D6510B}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WorkflowDemoWeb", "src\WorkflowDemoWeb\WorkflowDemoWeb.csproj", "{D8E3A2F1-5B6C-4E7D-9A0F-1C2B3D4E5F6A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ContractReview.Core", "src\ContractReview.Core\ContractReview.Core.csproj", "{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Artifacts", "Artifacts", "{39C4B39B-51A2-4F80-9863-4B9B0CEA9E4A}"
 	ProjectSection(SolutionItems) = preProject
 		LICENSE = LICENSE
@@ -24,5 +28,13 @@ Global
 		{C6F74672-C673-4529-8CC9-0A9A04D6510B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C6F74672-C673-4529-8CC9-0A9A04D6510B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C6F74672-C673-4529-8CC9-0A9A04D6510B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D8E3A2F1-5B6C-4E7D-9A0F-1C2B3D4E5F6A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D8E3A2F1-5B6C-4E7D-9A0F-1C2B3D4E5F6A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D8E3A2F1-5B6C-4E7D-9A0F-1C2B3D4E5F6A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D8E3A2F1-5B6C-4E7D-9A0F-1C2B3D4E5F6A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

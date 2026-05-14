@@ -1,4 +1,4 @@
-namespace WorkflowCheckpointWithHumanInTheLoop.Models;
+namespace ContractReview.Core.Models;
 
 public enum ReviewDecision
 {

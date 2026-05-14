@@ -1,0 +1,115 @@
+@page "/review/{RunId}"
+@rendermode InteractiveServer
+@inject WorkflowStateService StateService
+@inject WorkflowRunnerService Runner
+@inject NavigationManager Nav
+
+<PageTitle>Human Review</PageTitle>
+
+<h1 class="h3 mb-4">👤 Human Review</h1>
+
+@if (state is null)
+{
+    <div class="alert alert-danger">Run <code>@RunId</code> not found.</div>
+    <a href="/" class="btn btn-secondary">Back to Dashboard</a>
+}
+else if (state.Status != RunStatus.AwaitingHumanReview)
+{
+    <div class="alert alert-info">
+        This run is not awaiting review.
+        Current status: <strong>@state.Status</strong>
+    </div>
+    <a href="/" class="btn btn-secondary">Back to Dashboard</a>
+}
+else
+{
+    <!-- AI Review Summary -->
+    <div class="card mb-4 border-warning">
+        <div class="card-header bg-warning text-dark fw-bold">AI Review Summary</div>
+        <div class="card-body">
+            <dl class="row mb-0">
+                <dt class="col-sm-3">Contract</dt>
+                <dd class="col-sm-9"><code>@state.ContractId</code></dd>
+
+                <dt class="col-sm-3">AI Summary</dt>
+                <dd class="col-sm-9">@state.AiSummary</dd>
+
+                <dt class="col-sm-3">AI Suggestion</dt>
+                <dd class="col-sm-9">
+                    <span class="badge fs-6 @SuggestionBadgeClass(state.SuggestedDecision)">
+                        @state.SuggestedDecision
+                    </span>
+                </dd>
+            </dl>
+        </div>
+    </div>
+
+    <!-- Human Decision Form -->
+    <div class="card">
+        <div class="card-header fw-bold">Your Decision</div>
+        <div class="card-body">
+            <div class="mb-3">
+                @foreach (var option in new[] { "Approve", "Review", "Reject" })
+                {
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="decision"
+                               id="opt-@option" value="@option"
+                               checked="@(selectedDecision == option)"
+                               @onchange="@(() => selectedDecision = option)" />
+                        <label class="form-check-label" for="opt-@option">@option</label>
+                    </div>
+                }
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label">Comments <span class="text-muted">(optional)</span></label>
+                <textarea class="form-control" rows="3" @bind="comments"
+                          placeholder="Add any notes or override reasoning…"></textarea>
+            </div>
+
+            <button class="btn btn-primary" @onclick="HandleSubmit" disabled="@submitting">
+                @(submitting ? "Submitting…" : "Submit Decision")
+            </button>
+            <a href="/" class="btn btn-secondary ms-2">Cancel</a>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public string RunId { get; set; } = string.Empty;
+
+    private WorkflowRunState? state;
+    private string selectedDecision = "Approve";
+    private string? comments;
+    private bool submitting;
+
+    protected override void OnParametersSet()
+    {
+        state = StateService.Get(RunId);
+        // Pre-select the AI suggestion if available
+        if (state?.SuggestedDecision is not null)
+            selectedDecision = System.Globalization.CultureInfo.CurrentCulture.TextInfo
+                .ToTitleCase(state.SuggestedDecision.ToLowerInvariant());
+    }
+
+    private async Task HandleSubmit()
+    {
+        if (state is null) return;
+        submitting = true;
+
+        if (Enum.TryParse<ReviewDecision>(selectedDecision, ignoreCase: true, out var decision))
+            Runner.SubmitDecision(RunId, decision, string.IsNullOrWhiteSpace(comments) ? null : comments);
+
+        // Small delay so the background task can update state before redirect
+        await Task.Delay(300);
+        Nav.NavigateTo("/");
+    }
+
+    private static string SuggestionBadgeClass(string? suggestion) =>
+        suggestion?.ToUpperInvariant() switch
+        {
+            "APPROVE" => "bg-success",
+            "REJECT"  => "bg-danger",
+            _         => "bg-warning text-dark"
+        };
+}

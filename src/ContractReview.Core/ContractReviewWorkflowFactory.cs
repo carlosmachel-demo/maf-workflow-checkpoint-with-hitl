@@ -1,9 +1,9 @@
 using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Workflows;
-using WorkflowCheckpointWithHumanInTheLoop.Executors;
-using WorkflowCheckpointWithHumanInTheLoop.Models;
+using ContractReview.Core.Executors;
+using ContractReview.Core.Models;
 
-namespace WorkflowCheckpointWithHumanInTheLoop;
+namespace ContractReview.Core;
 
 public static class ContractReviewWorkflowFactory
 {
